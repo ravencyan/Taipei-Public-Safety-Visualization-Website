@@ -53,17 +53,23 @@
 
         // Add X axis
         const x = d3.scaleLinear()
-            .domain([106,112])
+            .domain([107,111])
             .range([ 0, width ]);
         svg.append("g")
             .attr("transform", `translate(0, ${height-100})`)
             .call(d3.axisBottom(x).ticks(5));
 
+        var cur_col = data.map(d => +d['松山區']);
+        console.log(cur_col);
+        //console.log(cur_col.slice(0,5));
+        console.log(Math.max(...cur_col));
+
         // Add Y axis
         const y = d3.scaleLinear()
-            .domain([0,130])
+            //.domain([0,130])
+            .domain([ 0, Math.max(...cur_col) ]).nice()
             .range([ height-100, 0 ]);
-        svg.append("g")
+        yAxis = svg.append("g")
             .call(d3.axisLeft(y));
 
         // Add X axis label:
@@ -75,8 +81,6 @@
             .style("font-size", "25px");
 
         // Initialize line with 松山區
-        var cur_col = data.map(d => d['松山區']);
-        console.log(cur_col.slice(0,5));
         var line = [];
         for (var i = 0; i < 4; i++) {
             line[i] = svg
@@ -99,13 +103,17 @@
         // A function that update the chart
         function update(selectedDistrict) {
             // Create new data with the selection
-            var new_col = data.map(d => d[selectedDistrict]);
-            console.log(new_col.slice(0,5));
+            cur_col = data.map(d => d[selectedDistrict]);
+            console.log(cur_col.slice(0,5));
+
+            // Change Y axis
+            y.domain([ 0, Math.max(...cur_col) ]).nice();
+            yAxis.transition().duration(800).call(d3.axisLeft(y));
 
             for (var i = 0; i < 4; i++) {
             // Give these new data to update line
             line[i]
-                .datum(new_col.slice(0+i*5, 5+i*5))
+                .datum(cur_col.slice(0+i*5, 5+i*5))
                 .transition()
                 .duration(800)
                 .attr("d", d3.line()
